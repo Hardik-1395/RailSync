@@ -263,6 +263,20 @@ cd frontend && npm run dev
 
 Frontend will be available at **http://localhost:3000** and proxies API calls to the gateway at **http://localhost:4000**.
 
+#### Local functional setup
+
+After copying each service's `.env.example` to `.env` and filling its local database and infrastructure settings, you can start the stack with:
+
+```bash
+docker compose up -d
+./start-services.sh
+./seed-data.sh
+```
+
+The seed script creates a verified local account, 10 sample stations, 5 trains with routes, and schedules for the next 7 days. It is safe to rerun; existing demo records are reused. Open **http://localhost:3000** and sign in with `local.admin@example.test` / `LocalDevOnly123!`. Override these defaults with `SEED_ADMIN_EMAIL` and `SEED_ADMIN_PASSWORD` if desired. Stop the app services with `./stop-services.sh`.
+
+In development mode, registration OTPs are logged by `user-service` (or in `logs/user-service.log` when started with `./start-services.sh`), so registration can be tested without SendGrid credentials. Real OTP email delivery still requires a valid SendGrid API key and verified sender. Real payment checkout still requires Razorpay test credentials in `payment-service/.env`.
+
 ---
 
 ## 📦 Services
@@ -615,7 +629,7 @@ ELASTICSEARCH_URL=http://localhost:9200
 KAFKA_BROKER=localhost:9093
 KAFKA_CLIENT_ID=search-service
 ALLOWED_ORIGINS=http://localhost:3000,http://localhost:4000,http://localhost:4001
-ES_RECREATE_INDICES=true
+ES_RECREATE_INDICES=false
 ```
 
 ### Admin Service — [admin-service/.env.example](admin-service/.env.example)

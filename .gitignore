@@ -42,6 +42,7 @@ out/
 # ============ Logs ============
 # Application and system logs
 logs/
+.pids
 *.log
 log/
 *.log.*
