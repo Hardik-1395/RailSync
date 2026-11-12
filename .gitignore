@@ -101,6 +101,7 @@ junit.xml
 
 # PostgreSQL dumps
 *.sql
+!init-db.sql
 *.dump
 
 # ============ Docker ============
