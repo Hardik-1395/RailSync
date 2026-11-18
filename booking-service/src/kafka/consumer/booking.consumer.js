@@ -44,7 +44,7 @@ const start = async () => {
                          break;
 
                     case KAFKA_TOPICS.SCHEDULE_CANCELLED: {
-                         const scheduleId = parsedValue.scheduleId || parsedValue.id || (parsedValue.data && parsedValue.data.scheduleId);
+                         const scheduleId = parsedValue.scheduleId || parsedValue.id || (parsedValue.data && (parsedValue.data.scheduleId || parsedValue.data.id));
                          await bookingService.handleScheduleCancelled(scheduleId);
                          break;
                     }
