@@ -4,8 +4,22 @@ const inventoryService = require('../services/inventory.service');
 
 exports.getScheduleAvailability = asyncHandler(async (req, res) => {
      const { scheduleId } = req.params;
+     const { fromSeq, toSeq } = req.query;
 
-     const data = await inventoryService.getAvailability(scheduleId);
+     if ((fromSeq && !toSeq) || (!fromSeq && toSeq)) {
+          throw new BadRequestError('fromSeq and toSeq must be provided together');
+     }
+
+     const segment = fromSeq && toSeq ? {
+          fromSeq: Number(fromSeq),
+          toSeq: Number(toSeq),
+     } : {};
+
+     if (fromSeq && (!Number.isInteger(segment.fromSeq) || !Number.isInteger(segment.toSeq))) {
+          throw new BadRequestError('fromSeq and toSeq must be integers');
+     }
+
+     const data = await inventoryService.getAvailability(scheduleId, segment);
 
      res.status(200).json({ success: true, data });
 });

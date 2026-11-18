@@ -20,16 +20,19 @@ export default function Navbar() {
           </Link>
 
           <div className="flex items-center gap-1 sm:gap-2">
-            <Link to="/search" className="px-3 py-2 rounded-lg text-sm font-medium hover:bg-primary-800 transition-colors">
+            <Link to="/" className="px-2 sm:px-3 py-2 rounded-lg text-sm font-medium hover:bg-primary-800 transition-colors">
+              Home
+            </Link>
+            <Link to="/search" className="px-2 sm:px-3 py-2 rounded-lg text-sm font-medium hover:bg-primary-800 transition-colors">
               Search
             </Link>
 
             {isAuthenticated ? (
               <>
-                <Link to="/bookings" className="px-3 py-2 rounded-lg text-sm font-medium hover:bg-primary-800 transition-colors">
+                <Link to="/bookings" className="px-2 sm:px-3 py-2 rounded-lg text-sm font-medium hover:bg-primary-800 transition-colors">
                   My Bookings
                 </Link>
-                <Link to="/admin" className="px-3 py-2 rounded-lg text-sm font-medium hover:bg-primary-800 transition-colors">
+                <Link to="/admin" className="px-2 sm:px-3 py-2 rounded-lg text-sm font-medium hover:bg-primary-800 transition-colors">
                   Admin
                 </Link>
                 <div className="flex items-center gap-2 ml-2 pl-2 border-l border-primary-700">

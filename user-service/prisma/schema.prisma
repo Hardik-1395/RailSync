@@ -23,7 +23,8 @@ model User {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  AuthProviders AuthProvider[]
+  AuthProviders   AuthProvider[]
+  savedPassengers SavedPassenger[]
 }
 
 model AuthProvider {
@@ -40,4 +41,21 @@ model AuthProvider {
   @@unique([provider, providerId])
   @@unique([userId, provider])
   @@index([userId])
+}
+
+model SavedPassenger {
+  id             String   @id @default(uuid())
+  userId         String
+  name           String
+  normalizedName String
+  age            Int
+  gender         String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, normalizedName, age, gender])
+  @@index([userId])
+  @@map("saved_passengers")
 }

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/auth.store';
 import { useBookingStore } from '../../store/booking.store';
 import { bookingApi } from '../../api/booking.api';
+import { passengerApi } from '../../api/passenger.api';
 import { loadRazorpayScript, openRazorpayCheckout } from '../../utils/razorpay';
 import { useToast } from '../ui/Toast';
 import Button from '../ui/Button';
@@ -19,10 +20,16 @@ export default function PaymentButton({ passengers, scheduleId, seatIds, disable
   const handlePay = async () => {
     setLoading(true);
     try {
+      await Promise.all(passengers.map(({ name, age, gender }) => passengerApi.create({ name, age, gender })));
+      showToast('Passenger details saved for future bookings', 'success');
+
       const idempotencyKey = crypto.randomUUID();
       // --- SEGMENT BOOKING: Include fromStation/toStation segment params ---
       const res = await bookingApi.create({
-        scheduleId, seatIds, passengers, idempotencyKey,
+        scheduleId,
+        seatIds,
+        passengers,
+        idempotencyKey,
         fromStationId: fromStation?.stationId,
         toStationId: toStation?.stationId,
         fromSeq: fromStation?.sequenceNumber,

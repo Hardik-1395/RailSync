@@ -216,9 +216,83 @@ async function recountScheduleAggregates(tx, scheduleId) {
 
 // ─── REST API Handlers ──────────────────────────────────────────────────────
 
-const getAvailability = async (scheduleId) => {
+const getAvailability = async (scheduleId, segment = {}) => {
      const schedule = await prisma.scheduleInventory.findUnique({ where: { scheduleId } });
      if (!schedule) throw new NotFoundError('Schedule not found in inventory');
+
+     const hasSegment = segment.fromSeq !== undefined && segment.toSeq !== undefined;
+     if (hasSegment) {
+          if (segment.fromSeq < 1 || segment.toSeq <= segment.fromSeq) {
+               throw new BadRequestError('The requested route segment is invalid');
+          }
+
+          const routeStops = await prisma.routeStop.findMany({
+               where: { scheduleId, sequenceNumber: { in: [segment.fromSeq, segment.toSeq] } },
+               select: { sequenceNumber: true },
+          });
+          if (routeStops.length !== 2) {
+               throw new BadRequestError('The requested stations are not part of this schedule route');
+          }
+     }
+
+     const { seats } = await getSeats(scheduleId, hasSegment ? segment : {});
+     const byCoach = new Map();
+
+     for (const seat of seats) {
+          if (!byCoach.has(seat.seatType)) {
+               byCoach.set(seat.seatType, {
+                    seatType: seat.seatType,
+                    total: 0,
+                    available: 0,
+                    occupied: 0,
+                    locked: 0,
+                    booked: 0,
+                    seats: [],
+               });
+          }
+
+          const coach = byCoach.get(seat.seatType);
+          coach.total++;
+
+          let isAvailable = false;
+          let availabilityStatus = 'UNAVAILABLE';
+          const scheduleCanBook = schedule.status === 'ACTIVE' && seat.status !== 'CANCELLED';
+          if (scheduleCanBook && hasSegment) {
+               isAvailable = seat.segmentStatus === 'AVAILABLE';
+               availabilityStatus = isAvailable ? 'AVAILABLE' : (seat.status === 'LOCKED' ? 'LOCKED' : 'BOOKED');
+               if (isAvailable) coach.available++;
+               else coach.occupied++;
+          } else if (scheduleCanBook && seat.status === 'AVAILABLE') {
+               isAvailable = true;
+               availabilityStatus = 'AVAILABLE';
+               coach.available++;
+          } else if (scheduleCanBook && seat.status === 'LOCKED') {
+               availabilityStatus = 'LOCKED';
+               coach.locked++;
+          } else if (scheduleCanBook && seat.status === 'BOOKED') {
+               availabilityStatus = 'BOOKED';
+               coach.booked++;
+          }
+
+          // This endpoint is public. Return only the fields needed for a
+          // read-only visual availability map; never expose seat or booking IDs.
+          coach.seats.push({
+               seatNumber: seat.seatNumber,
+               seatType: seat.seatType,
+               price: seat.price,
+               available: isAvailable,
+               status: availabilityStatus,
+          });
+     }
+
+     const coachAvailability = [...byCoach.values()].sort((a, b) => a.seatType.localeCompare(b.seatType));
+     const totals = coachAvailability.reduce((result, coach) => ({
+          totalSeats: result.totalSeats + coach.total,
+          available: result.available + coach.available,
+          occupied: result.occupied + coach.occupied,
+          locked: result.locked + coach.locked,
+          booked: result.booked + coach.booked,
+     }), { totalSeats: 0, available: 0, occupied: 0, locked: 0, booked: 0 });
 
      return {
           scheduleId: schedule.scheduleId,
@@ -227,10 +301,9 @@ const getAvailability = async (scheduleId) => {
           trainName: schedule.trainName,
           departureDate: schedule.departureDate,
           status: schedule.status,
-          totalSeats: schedule.totalSeats,
-          available: schedule.available,
-          locked: schedule.locked,
-          booked: schedule.booked,
+          ...totals,
+          segmentAware: hasSegment,
+          coachAvailability,
      };
 };
 

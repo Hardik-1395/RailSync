@@ -1,8 +1,13 @@
 import client from './client';
 
 export const inventoryApi = {
-  getAvailability: (scheduleId) =>
-    client.get(`/inventory/schedules/${scheduleId}/availability`).then((r) => r.data),
+  getAvailability: (scheduleId, params = {}) => {
+    const qs = new URLSearchParams();
+    if (params.fromSeq != null) qs.set('fromSeq', params.fromSeq);
+    if (params.toSeq != null) qs.set('toSeq', params.toSeq);
+    const qStr = qs.toString();
+    return client.get(`/inventory/schedules/${scheduleId}/availability${qStr ? '?' + qStr : ''}`).then((r) => r.data);
+  },
 
   getSeats: (scheduleId, params = {}) => {
     const qs = new URLSearchParams();

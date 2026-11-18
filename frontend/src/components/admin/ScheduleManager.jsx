@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { adminApi } from '../../api/admin.api';
 import { useToast } from '../ui/Toast';
 import Button from '../ui/Button';
 import Badge from '../ui/Badge';
 import { formatDate } from '../../utils/format';
+import Modal from '../ui/Modal';
 
 export default function ScheduleManager() {
   const [trains, setTrains] = useState([]);
@@ -12,6 +13,9 @@ export default function ScheduleManager() {
   const [date, setDate] = useState('');
   const [creating, setCreating] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [scheduleToDelete, setScheduleToDelete] = useState(null);
+  const [deleting, setDeleting] = useState(false);
+  const deletionInFlight = useRef(false);
   const showToast = useToast();
 
   useEffect(() => {
@@ -48,14 +52,25 @@ export default function ScheduleManager() {
     }
   };
 
-  const handleCancel = async (id) => {
+  const handleConfirmDelete = async () => {
+    if (!scheduleToDelete || deletionInFlight.current) return;
+    deletionInFlight.current = true;
+    setDeleting(true);
     try {
-      await adminApi.cancelSchedule(id);
+      await adminApi.cancelSchedule(scheduleToDelete.id);
       showToast('Schedule cancelled', 'success');
-      fetchSchedules();
+      setScheduleToDelete(null);
+      await fetchSchedules();
     } catch (err) {
       showToast(err.message, 'error');
+    } finally {
+      deletionInFlight.current = false;
+      setDeleting(false);
     }
+  };
+
+  const closeDeleteDialog = () => {
+    if (!deletionInFlight.current) setScheduleToDelete(null);
   };
 
   const today = new Date().toISOString().split('T')[0];
@@ -101,7 +116,7 @@ export default function ScheduleManager() {
                     <td className="py-2"><Badge status={s.status} /></td>
                     <td className="py-2 text-right">
                       {s.status === 'ACTIVE' && (
-                        <Button variant="danger" onClick={() => handleCancel(s.id)} className="text-xs py-1 px-2">Cancel</Button>
+                        <Button variant="danger" onClick={() => setScheduleToDelete(s)} className="text-xs py-1 px-2">Cancel</Button>
                       )}
                     </td>
                   </tr>
@@ -111,6 +126,18 @@ export default function ScheduleManager() {
           </div>
         )}
       </div>
+
+      <Modal
+        open={Boolean(scheduleToDelete)}
+        onClose={closeDeleteDialog}
+        title="Delete schedule"
+        confirmText="Confirm Delete"
+        onConfirm={handleConfirmDelete}
+        loading={deleting}
+        danger
+      >
+        Are you sure about deleting this schedule?
+      </Modal>
     </div>
   );
 }

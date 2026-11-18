@@ -71,6 +71,34 @@ router.delete(
      userServiceProxy
 )
 
+router.get(
+     '/users/user/passengers',
+     requireAuth,
+     combinedRateLimit(),
+     userServiceProxy
+);
+
+router.post(
+     '/users/user/passengers',
+     requireAuth,
+     combinedRateLimit(),
+     userServiceProxy
+);
+
+router.put(
+     '/users/user/passengers/:passengerId',
+     requireAuth,
+     combinedRateLimit(),
+     userServiceProxy
+);
+
+router.delete(
+     '/users/user/passengers/:passengerId',
+     requireAuth,
+     combinedRateLimit(),
+     userServiceProxy
+);
+
 const adminServiceProxy = createProxy('adminService', config.SERVICES.ADMIN_SERVICE_URL);
 
 router.post(

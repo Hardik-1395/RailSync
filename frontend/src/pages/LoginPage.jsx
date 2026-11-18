@@ -1,10 +1,12 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuthStore } from '../store/auth.store';
 import { authApi } from '../api/auth.api';
 import { useToast } from '../components/ui/Toast';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
+
+const OTP_RESEND_DELAY_MS = 30_000;
 
 export default function LoginPage() {
   const [tab, setTab] = useState('login'); // login | register | otp
@@ -24,8 +26,37 @@ export default function LoginPage() {
 
   // OTP form
   const [otp, setOtp] = useState('');
+  const [resendAvailableAt, setResendAvailableAt] = useState(0);
+  const [resendSeconds, setResendSeconds] = useState(0);
+  const [resending, setResending] = useState(false);
+  const otpRequestInFlight = useRef(false);
 
   const redirect = searchParams.get('redirect') || '/';
+
+  useEffect(() => {
+    if (!resendAvailableAt) {
+      setResendSeconds(0);
+      return undefined;
+    }
+
+    const updateCountdown = () => {
+      const remaining = Math.max(0, Math.ceil((resendAvailableAt - Date.now()) / 1000));
+      setResendSeconds(remaining);
+      if (remaining === 0) {
+        setResendAvailableAt(0);
+      }
+    };
+
+    updateCountdown();
+    const intervalId = window.setInterval(updateCountdown, 1000);
+    return () => window.clearInterval(intervalId);
+  }, [resendAvailableAt]);
+
+  const startResendCountdown = () => {
+    const deadline = Date.now() + OTP_RESEND_DELAY_MS;
+    setResendAvailableAt(deadline);
+    setResendSeconds(Math.ceil(OTP_RESEND_DELAY_MS / 1000));
+  };
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -46,19 +77,23 @@ export default function LoginPage() {
 
   const handleRegister = async (e) => {
     e.preventDefault();
+    if (otpRequestInFlight.current) return;
     setError('');
     if (regData.password !== regData.confirmPassword) {
       setError('Passwords do not match');
       return;
     }
+    otpRequestInFlight.current = true;
     setLoading(true);
     try {
       await authApi.sendOtp(regData);
+      startResendCountdown();
       showToast('OTP sent to your email!', 'success');
       setTab('otp');
     } catch (err) {
       setError(err.message);
     } finally {
+      otpRequestInFlight.current = false;
       setLoading(false);
     }
   };
@@ -69,6 +104,8 @@ export default function LoginPage() {
     setLoading(true);
     try {
       await authApi.verifyOtp(otp);
+      setResendAvailableAt(0);
+      setResendSeconds(0);
       showToast('Email verified! Please log in.', 'success');
       setEmail(regData.email);
       setTab('login');
@@ -76,6 +113,24 @@ export default function LoginPage() {
       setError(err.message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleResendOtp = async () => {
+    if (resendSeconds > 0 || otpRequestInFlight.current) return;
+
+    otpRequestInFlight.current = true;
+    setResending(true);
+    setError('');
+    try {
+      await authApi.sendOtp(regData);
+      startResendCountdown();
+      showToast('A new OTP has been sent to your email.', 'success');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      otpRequestInFlight.current = false;
+      setResending(false);
     }
   };
 
@@ -120,7 +175,7 @@ export default function LoginPage() {
           {tab === 'login' && (
             <form onSubmit={handleLogin} className="space-y-4">
               <Input label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Enter your email" required />
-              <Input label="Password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Enter your password" required />
+              <Input label="Password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Enter your password" required autoComplete="current-password" />
               <Button type="submit" loading={loading} className="w-full">Sign In</Button>
             </form>
           )}
@@ -133,8 +188,8 @@ export default function LoginPage() {
                 <Input label="Last Name" value={regData.lastName} onChange={(e) => setRegData({ ...regData, lastName: e.target.value })} required />
               </div>
               <Input label="Email" type="email" value={regData.email} onChange={(e) => setRegData({ ...regData, email: e.target.value })} required />
-              <Input label="Password" type="password" value={regData.password} onChange={(e) => setRegData({ ...regData, password: e.target.value })} required />
-              <Input label="Confirm Password" type="password" value={regData.confirmPassword} onChange={(e) => setRegData({ ...regData, confirmPassword: e.target.value })} required />
+              <Input label="Password" type="password" value={regData.password} onChange={(e) => setRegData({ ...regData, password: e.target.value })} required autoComplete="new-password" />
+              <Input label="Confirm Password" type="password" value={regData.confirmPassword} onChange={(e) => setRegData({ ...regData, confirmPassword: e.target.value })} required autoComplete="new-password" />
               <Button type="submit" loading={loading} className="w-full">Create Account</Button>
             </form>
           )}
@@ -147,6 +202,25 @@ export default function LoginPage() {
               </p>
               <Input label="OTP Code" value={otp} onChange={(e) => setOtp(e.target.value)} placeholder="Enter 6-digit OTP" maxLength={6} required />
               <Button type="submit" loading={loading} className="w-full">Verify OTP</Button>
+              <div className="flex flex-col items-center gap-2 text-sm sm:flex-row sm:justify-center sm:gap-3">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  loading={resending}
+                  disabled={resendSeconds > 0 || loading || resending}
+                  onClick={handleResendOtp}
+                  className="w-full sm:w-auto"
+                >
+                  Resend OTP
+                </Button>
+                {resendSeconds > 0 ? (
+                  <span role="status" aria-live="polite" className="text-gray-500">
+                    Available in 00:{String(resendSeconds).padStart(2, '0')}
+                  </span>
+                ) : (
+                  <span className="text-gray-500">You can request a new code.</span>
+                )}
+              </div>
               <button type="button" onClick={() => setTab('register')} className="text-sm text-primary-700 hover:underline w-full text-center">
                 Back to register
               </button>

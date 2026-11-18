@@ -103,6 +103,7 @@ junit.xml
 # PostgreSQL dumps
 *.sql
 !init-db.sql
+!user-service/prisma/migrations/**/migration.sql
 *.dump
 
 # ============ Docker ============
