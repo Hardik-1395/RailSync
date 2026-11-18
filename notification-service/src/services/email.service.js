@@ -14,7 +14,10 @@ sgMail.setApiKey(config.SENDGRID_API_KEY);
 
 class EmailService {
      constructor() {
-          this.from = config.MAIL_SEND
+          const configuredSender = (config.MAIL_SEND || '').trim();
+          const senderMatch = configuredSender.match(/^(.*?)\s*<([^>]+)>$/);
+          const senderEmail = senderMatch ? senderMatch[2].trim() : configuredSender;
+          this.from = { email: senderEmail, name: 'RailSync' };
           this.maxRetries = 3;
      }
 
@@ -47,7 +50,7 @@ class EmailService {
           const msg = {
                to: email,
                from: this.from,
-               subject: 'Your DesignKarle verification code',
+               subject: 'Your RailSync verification code',
                html: getOtpTemplate(otp, ttlMinutes),
           };
 
@@ -58,7 +61,7 @@ class EmailService {
           const msg = {
                to: email,
                from: this.from,
-               subject: 'Welcome to DesignKarle - Email Verified',
+               subject: 'Welcome to RailSync - Email Verified',
                html: getWelcomeTemplate(firstName),
           };
 

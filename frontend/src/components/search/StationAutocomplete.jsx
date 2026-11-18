@@ -5,16 +5,20 @@ import { searchApi } from '../../api/search.api';
 export default function StationAutocomplete({ label, value, displayValue, onChange, placeholder, hero = false }) {
   const [query, setQuery] = useState(displayValue || value || '');
   const [suggestions, setSuggestions] = useState([]);
+  const [stations, setStations] = useState([]);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [searchActive, setSearchActive] = useState(false);
+  const [focused, setFocused] = useState(false);
   const debouncedQuery = useDebounce(query, 300);
   const wrapperRef = useRef(null);
 
   useEffect(() => {
     if (!searchActive || debouncedQuery.trim().length < 2) {
-      setSuggestions([]);
-      setOpen(false);
+      const normalizedQuery = query.trim().toLowerCase();
+      setSuggestions(normalizedQuery
+        ? stations.filter((station) => [station.name, station.code, station.city].some((field) => field?.toLowerCase().includes(normalizedQuery)))
+        : stations);
       return;
     }
     let cancelled = false;
@@ -30,11 +34,14 @@ export default function StationAutocomplete({ label, value, displayValue, onChan
       if (!cancelled) setLoading(false);
     });
     return () => { cancelled = true; };
-  }, [debouncedQuery, searchActive]);
+  }, [debouncedQuery, query, searchActive, stations]);
 
   useEffect(() => {
     function handleClickOutside(e) {
-      if (wrapperRef.current && !wrapperRef.current.contains(e.target)) setOpen(false);
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {
+        setOpen(false);
+        setFocused(false);
+      }
     }
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
@@ -49,6 +56,7 @@ export default function StationAutocomplete({ label, value, displayValue, onChan
   const handleSelect = (station) => {
     setQuery(`${station.name} (${station.code})`);
     setSearchActive(false);
+    setFocused(false);
     setSuggestions([]);
     onChange(station.code, station.name);
     setOpen(false);
@@ -73,11 +81,32 @@ export default function StationAutocomplete({ label, value, displayValue, onChan
             const canSearch = nextQuery.trim().length >= 2;
             setQuery(nextQuery);
             setSearchActive(canSearch);
-            setSuggestions([]);
-            setOpen(canSearch);
+            setFocused(true);
+            if (!canSearch) {
+              const normalizedQuery = nextQuery.trim().toLowerCase();
+              setSuggestions(normalizedQuery
+                ? stations.filter((station) => [station.name, station.code, station.city].some((field) => field?.toLowerCase().includes(normalizedQuery)))
+                : stations);
+            }
+            setOpen(true);
             if (!canSearch) onChange('', '');
           }}
-          onFocus={() => { if (searchActive && suggestions.length > 0) setOpen(true); }}
+          onFocus={() => {
+            setFocused(true);
+            setOpen(true);
+            if (stations.length === 0) {
+              setLoading(true);
+              searchApi.stations().then((res) => {
+                const list = res.data || [];
+                setStations(list);
+                if (query.trim().length < 2) setSuggestions(list);
+              }).catch(() => {
+                setSuggestions([]);
+              }).finally(() => setLoading(false));
+            } else if (query.trim().length < 2) {
+              setSuggestions(stations);
+            }
+          }}
           placeholder={placeholder}
           className={hero ? 'w-full border-0 bg-transparent p-0 text-base text-gray-900 placeholder:text-gray-400 focus:border-0 focus:outline-none focus:ring-0' : 'input-field'}
         />
@@ -87,7 +116,7 @@ export default function StationAutocomplete({ label, value, displayValue, onChan
           <div className="animate-spin h-4 w-4 border-b-2 border-primary-900 rounded-full" />
         </div>
       )}
-      {open && (suggestions.length > 0 || loading) && (
+      {focused && open && (
         <ul className="absolute left-0 z-40 mt-1 max-h-72 w-full overflow-y-auto rounded-xl border border-gray-200 bg-white shadow-xl">
           {suggestions.map((s) => (
             <li

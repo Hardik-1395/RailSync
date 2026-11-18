@@ -363,6 +363,7 @@ const autocompleteStation = async (prefix) => {
      return options.map((o) => ({
           name: o._source.name,
           code: o._source.code,
+          city: o._source.city,
           stationId: o._source.stationId,
      }));
 };
@@ -374,7 +375,7 @@ const getAllStations = async () => {
      const result = await esClient.search({
           index: STATION_INDEX,
           query: { match_all: {} },
-          size: 100,
+          size: 1000,
      });
      return result.hits.hits.map((h) => h._source);
 };

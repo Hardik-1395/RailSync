@@ -15,8 +15,8 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="flex items-center justify-between h-16">
           <Link to="/" className="flex items-center gap-2 font-bold text-xl tracking-wide">
-            <span className="bg-white text-primary-900 rounded px-1.5 py-0.5 text-sm font-black">IR</span>
-            <span>IRCTC</span>
+            <span className="bg-white text-primary-900 rounded px-1.5 py-0.5 text-sm font-black">RS</span>
+            <span>RailSync</span>
           </Link>
 
           <div className="flex items-center gap-1 sm:gap-2">

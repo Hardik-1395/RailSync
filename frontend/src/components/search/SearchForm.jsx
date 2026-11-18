@@ -193,7 +193,7 @@ export default function SearchForm({ compact, hero = false, submitLabel = 'Searc
           )}
         </div>
         <div className={hero ? 'flex items-end' : 'flex items-end'}>
-          <Button type="submit" loading={isSearching} className={hero ? 'w-full rounded-full py-3 text-base sm:min-w-64' : compact ? 'w-full rounded-full bg-blue-700 px-5 hover:bg-blue-800' : 'w-full'}>
+          <Button type="submit" loading={isSearching} className={hero ? 'min-h-[76px] w-full rounded-full py-3 text-base sm:min-w-64' : compact ? 'w-full rounded-full bg-blue-700 px-5 hover:bg-blue-800' : 'w-full'}>
             {submitLabel}
             {(hero || compact) && (
               <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">

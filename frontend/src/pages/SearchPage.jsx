@@ -60,7 +60,7 @@ export default function SearchPage() {
     <div className="min-h-full bg-gradient-to-br from-rose-50 via-slate-50 to-sky-100 pb-10">
       <section className="border-b border-slate-200 bg-white px-4 py-4 shadow-sm sm:px-6">
         <div className="mx-auto flex max-w-7xl flex-col items-stretch gap-3 sm:flex-row sm:items-start">
-          <Button type="button" variant="secondary" onClick={() => navigate(-1)} className="shrink-0 rounded-full border-blue-600 px-5 text-blue-700 hover:bg-blue-50">
+          <Button type="button" variant="secondary" onClick={() => navigate(-1)} className="shrink-0 rounded-full border-blue-600 px-5 text-blue-700 hover:bg-blue-50 lg:mt-6">
             Back
           </Button>
           <div className="min-w-0 flex-1">

@@ -7,6 +7,7 @@ router.get('/trains', ctrl.searchTrains);
 
 // GET /search/autocomplete?q=del
 router.get('/autocomplete', ctrl.autocomplete);
+router.get('/stations', ctrl.listStations);
 
 // Debug endpoints
 router.get('/debug/stations', ctrl.debugStations);

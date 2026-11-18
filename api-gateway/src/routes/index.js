@@ -180,6 +180,12 @@ router.get(
      searchServiceProxy
 );
 
+router.get(
+     '/search/stations',
+     endpointRateLimit(60, 60000), // 60 requests per minute
+     searchServiceProxy
+);
+
 // ===========================
 // INVENTORY SERVICE ROUTES (public read-only)
 // ===========================
