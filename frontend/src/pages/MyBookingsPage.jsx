@@ -6,6 +6,7 @@ import Pagination from '../components/ui/Pagination';
 import Spinner from '../components/ui/Spinner';
 import EmptyState from '../components/ui/EmptyState';
 import { useToast } from '../components/ui/Toast';
+import { Link } from 'react-router-dom';
 
 export default function MyBookingsPage() {
   const [bookings, setBookings] = useState([]);
@@ -37,23 +38,41 @@ export default function MyBookingsPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6">My Bookings</h1>
+    <div className="min-h-full bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 px-4 py-7 sm:py-9">
+      <div className="mx-auto max-w-5xl">
+        <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-700">Your trips</p>
+            <h1 className="mt-1 text-3xl font-bold text-slate-900">My Bookings</h1>
+            <p className="mt-1 text-sm text-slate-600">View your tickets and check their booking status.</p>
+          </div>
+          <Link to="/search" className="inline-flex items-center rounded-full bg-blue-700 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">
+            Book a train
+          </Link>
+        </header>
 
-      <BookingFilters active={statusFilter} onChange={(v) => setStatusFilter(v)} />
+        <div className="mb-5 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:p-4">
+          <BookingFilters active={statusFilter} onChange={(v) => setStatusFilter(v)} />
+        </div>
 
       {loading ? (
-        <div className="flex justify-center py-16"><Spinner size="lg" /></div>
+        <div className="flex justify-center rounded-2xl border border-slate-200 bg-white py-16"><Spinner size="lg" /></div>
       ) : bookings.length === 0 ? (
-        <EmptyState title="No bookings found" message={statusFilter ? 'Try a different filter' : 'Book your first train ticket!'} />
+        <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <EmptyState title="No bookings found" message={statusFilter ? 'Try a different filter' : 'Book your first train ticket!'}>
+            <Link to="/search" className="inline-flex rounded-full bg-primary-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-primary-800">Search trains</Link>
+          </EmptyState>
+        </div>
       ) : (
         <>
+          <p className="mb-3 text-sm text-slate-500">{pagination.total} booking{pagination.total === 1 ? '' : 's'}</p>
           <div className="space-y-3">
             {bookings.map((b) => <BookingCard key={b.id} booking={b} />)}
           </div>
           <Pagination page={pagination.page} totalPages={pagination.totalPages} onPageChange={handlePageChange} />
         </>
       )}
+      </div>
     </div>
   );
 }

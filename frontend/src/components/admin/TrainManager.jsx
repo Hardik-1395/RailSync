@@ -61,18 +61,21 @@ export default function TrainManager() {
 
   return (
     <div>
-      <form onSubmit={handleCreate} className="card mb-6">
-        <h3 className="font-semibold mb-4">Create Train</h3>
-        <div className="grid grid-cols-3 gap-3 mb-4">
+      <form onSubmit={handleCreate} className="mb-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+        <div className="mb-4">
+          <h2 className="text-lg font-bold text-slate-900">Add a train</h2>
+          <p className="mt-1 text-sm text-slate-500">Enter train details and configure the seats available for booking.</p>
+        </div>
+        <div className="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
           <Input label="Train Number" value={form.trainNumber} onChange={(e) => setForm({ ...form, trainNumber: e.target.value })} required />
           <Input label="Train Name" value={form.trainName} onChange={(e) => setForm({ ...form, trainName: e.target.value })} required />
           <Input label="Coach Name" value={form.coachName} onChange={(e) => setForm({ ...form, coachName: e.target.value })} required />
         </div>
 
-        <h4 className="text-sm font-medium mb-2">Seats</h4>
-        <div className="space-y-2 mb-4">
+        <h3 className="mb-2 text-sm font-semibold text-slate-800">Seat inventory</h3>
+        <div className="mb-4 space-y-2">
           {seatRows.map((row, i) => (
-            <div key={i} className="flex gap-2 items-end">
+            <div key={i} className="flex flex-wrap items-end gap-2 rounded-xl border border-slate-100 bg-slate-50 p-3">
               <Input label={i === 0 ? 'Seat #' : undefined} type="number" value={row.seatNumber} onChange={(e) => updateSeatRow(i, 'seatNumber', e.target.value)} placeholder="#" required className="w-24" />
               <Select label={i === 0 ? 'Type' : undefined} value={row.seatType} onChange={(e) => updateSeatRow(i, 'seatType', e.target.value)} options={seatTypeOptions} className="w-36" />
               <Input label={i === 0 ? 'Price' : undefined} type="number" value={row.price} onChange={(e) => updateSeatRow(i, 'price', e.target.value)} placeholder="Price" required className="w-28" />
@@ -82,36 +85,40 @@ export default function TrainManager() {
             </div>
           ))}
         </div>
-        <div className="flex gap-3">
-          <Button type="button" variant="secondary" onClick={addSeatRow}>+ Add Seat</Button>
-          <Button type="submit" loading={creating}>Create Train</Button>
+        <div className="flex flex-wrap gap-3">
+          <Button type="button" variant="secondary" onClick={addSeatRow} className="rounded-full">+ Add Seat</Button>
+          <Button type="submit" loading={creating} className="rounded-full bg-blue-700 px-5 hover:bg-blue-800">Create Train</Button>
         </div>
       </form>
 
-      <div className="card">
-        <h3 className="font-semibold mb-4">Trains</h3>
+      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+        <div className="mb-4">
+          <h2 className="text-lg font-bold text-slate-900">Train directory</h2>
+          <p className="mt-1 text-sm text-slate-500">Configured trains and their seat counts.</p>
+        </div>
         {loading ? <p className="text-center py-4 text-gray-400">Loading...</p> : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b">
-                  <th className="py-2 text-left">Number</th>
-                  <th className="py-2 text-left">Name</th>
-                  <th className="py-2 text-left">Coach</th>
-                  <th className="py-2 text-left">Seats</th>
+              <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+                <tr className="border-b border-slate-200">
+                  <th className="px-3 py-3 text-left font-semibold">Number</th>
+                  <th className="px-3 py-3 text-left font-semibold">Name</th>
+                  <th className="px-3 py-3 text-left font-semibold">Coach</th>
+                  <th className="px-3 py-3 text-left font-semibold">Seats</th>
                 </tr>
               </thead>
               <tbody>
                 {trains.map((t) => (
-                  <tr key={t.id} className="border-b border-gray-50 hover:bg-gray-50">
-                    <td className="py-2 font-mono">{t.trainNumber}</td>
-                    <td className="py-2">{t.trainName}</td>
-                    <td className="py-2">{t.coachName}</td>
-                    <td className="py-2">{t.totalSeats || t.seats?.length || '—'}</td>
+                  <tr key={t.id} className="border-b border-slate-100 text-slate-700 transition hover:bg-blue-50/50">
+                    <td className="px-3 py-3 font-mono text-xs">{t.trainNumber}</td>
+                    <td className="px-3 py-3 font-medium">{t.trainName}</td>
+                    <td className="px-3 py-3">{t.coachName}</td>
+                    <td className="px-3 py-3"><span className="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-800">{t.totalSeats || t.seats?.length || '—'}</span></td>
                   </tr>
                 ))}
               </tbody>
             </table>
+            {!loading && trains.length === 0 && <p className="py-8 text-center text-sm text-slate-500">No trains have been created yet.</p>}
           </div>
         )}
       </div>

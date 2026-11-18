@@ -9,6 +9,7 @@ import SeatGrid from '../components/seats/SeatGrid';
 import SeatLegend from '../components/seats/SeatLegend';
 import SelectionSummary from '../components/seats/SelectionSummary';
 import Spinner from '../components/ui/Spinner';
+import Button from '../components/ui/Button';
 import { MAX_SEATS_PER_BOOKING } from '../utils/constants';
 
 export default function SeatSelectionPage() {
@@ -97,20 +98,36 @@ export default function SeatSelectionPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8 pb-24">
-      <AvailabilitySummary availability={availability} train={selectedTrain} />
-
-      <div className="card">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-3">
-          <h3 className="text-lg font-semibold">Select Seats</h3>
-          <SeatLegend />
+    <div className="min-h-full bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 px-4 py-6 pb-28 sm:py-8">
+      <div className="mx-auto max-w-6xl">
+        <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-700">Booking step 1 of 2</p>
+            <h1 className="mt-1 text-2xl font-bold text-slate-900 sm:text-3xl">Choose your seats</h1>
+            <p className="mt-1 text-sm text-slate-600">Select available seats for your journey.</p>
+          </div>
+          <Button type="button" variant="secondary" onClick={() => navigate('/search')} className="rounded-full border-slate-300 bg-white px-4">
+            Back to trains
+          </Button>
         </div>
 
-        <SeatFilters activeFilter={filter} onChange={setFilter} />
-        <SeatGrid seats={filteredSeats} selectedSeats={selectedSeats} onToggleSeat={handleToggleSeat} />
-      </div>
+        <AvailabilitySummary availability={availability} train={selectedTrain} />
 
-      <SelectionSummary />
+        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
+          <div className="mb-5 flex flex-col gap-3 border-b border-slate-100 pb-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="text-lg font-bold text-slate-900">Select seats</h2>
+              <p className="mt-1 text-sm text-slate-500">Tap a green seat to add it to your booking.</p>
+            </div>
+            <SeatLegend />
+          </div>
+
+          <SeatFilters activeFilter={filter} onChange={setFilter} />
+          <SeatGrid seats={filteredSeats} selectedSeats={selectedSeats} onToggleSeat={handleToggleSeat} />
+        </div>
+
+        <SelectionSummary />
+      </div>
     </div>
   );
 }

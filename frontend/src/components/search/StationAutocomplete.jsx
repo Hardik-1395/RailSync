@@ -7,12 +7,14 @@ export default function StationAutocomplete({ label, value, displayValue, onChan
   const [suggestions, setSuggestions] = useState([]);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [searchActive, setSearchActive] = useState(false);
   const debouncedQuery = useDebounce(query, 300);
   const wrapperRef = useRef(null);
 
   useEffect(() => {
-    if (debouncedQuery.length < 2) {
+    if (!searchActive || debouncedQuery.trim().length < 2) {
       setSuggestions([]);
+      setOpen(false);
       return;
     }
     let cancelled = false;
@@ -28,7 +30,7 @@ export default function StationAutocomplete({ label, value, displayValue, onChan
       if (!cancelled) setLoading(false);
     });
     return () => { cancelled = true; };
-  }, [debouncedQuery]);
+  }, [debouncedQuery, searchActive]);
 
   useEffect(() => {
     function handleClickOutside(e) {
@@ -46,6 +48,8 @@ export default function StationAutocomplete({ label, value, displayValue, onChan
 
   const handleSelect = (station) => {
     setQuery(`${station.name} (${station.code})`);
+    setSearchActive(false);
+    setSuggestions([]);
     onChange(station.code, station.name);
     setOpen(false);
   };
@@ -65,10 +69,15 @@ export default function StationAutocomplete({ label, value, displayValue, onChan
           spellCheck={false}
           value={query}
           onChange={(e) => {
-            setQuery(e.target.value);
-            if (e.target.value.length < 2) onChange('', '');
+            const nextQuery = e.target.value;
+            const canSearch = nextQuery.trim().length >= 2;
+            setQuery(nextQuery);
+            setSearchActive(canSearch);
+            setSuggestions([]);
+            setOpen(canSearch);
+            if (!canSearch) onChange('', '');
           }}
-          onFocus={() => suggestions.length > 0 && setOpen(true)}
+          onFocus={() => { if (searchActive && suggestions.length > 0) setOpen(true); }}
           placeholder={placeholder}
           className={hero ? 'w-full border-0 bg-transparent p-0 text-base text-gray-900 placeholder:text-gray-400 focus:border-0 focus:outline-none focus:ring-0' : 'input-field'}
         />
@@ -78,18 +87,24 @@ export default function StationAutocomplete({ label, value, displayValue, onChan
           <div className="animate-spin h-4 w-4 border-b-2 border-primary-900 rounded-full" />
         </div>
       )}
-      {open && suggestions.length > 0 && (
-        <ul className="absolute z-30 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+      {open && (suggestions.length > 0 || loading) && (
+        <ul className="absolute left-0 z-40 mt-1 max-h-72 w-full overflow-y-auto rounded-xl border border-gray-200 bg-white shadow-xl">
           {suggestions.map((s) => (
             <li
               key={s.stationId || s.code}
+              onMouseDown={(event) => event.preventDefault()}
               onClick={() => handleSelect(s)}
-              className="px-4 py-2.5 hover:bg-primary-50 cursor-pointer text-sm flex justify-between"
+              className="flex cursor-pointer items-center justify-between gap-3 border-b border-slate-100 px-4 py-3 text-left last:border-b-0 hover:bg-primary-50"
             >
-              <span className="font-medium">{s.name}</span>
-              <span className="text-gray-400 text-xs">{s.code}</span>
+              <span className="min-w-0">
+                <span className="block truncate text-xs font-bold uppercase tracking-wide text-slate-800">{s.name}</span>
+                {s.city && <span className="mt-0.5 block truncate text-xs text-slate-500">{s.city}</span>}
+              </span>
+              <span className="shrink-0 text-xs font-medium text-slate-500">{s.code}</span>
             </li>
           ))}
+          {loading && <li className="px-4 py-3 text-sm text-slate-500">Loading stations…</li>}
+          {!loading && suggestions.length === 0 && <li className="px-4 py-3 text-sm text-slate-500">No stations found</li>}
         </ul>
       )}
     </div>

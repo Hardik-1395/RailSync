@@ -86,7 +86,7 @@ export default function PaymentButton({ passengers, scheduleId, seatIds, disable
   };
 
   return (
-    <Button onClick={handlePay} loading={loading} disabled={disabled} className="w-full text-base py-3">
+    <Button onClick={handlePay} loading={loading} disabled={disabled} className="w-full rounded-full bg-blue-700 py-3 text-base shadow-sm hover:bg-blue-800">
       Confirm & Pay
     </Button>
   );

@@ -48,30 +48,36 @@ export default function BookingPage() {
   if (seats.length === 0) return null;
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6">Complete Your Booking</h1>
+    <div className="min-h-full bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 px-4 py-7 sm:py-9">
+      <div className="mx-auto max-w-3xl">
+        <header className="mb-6">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-700">Booking step 2 of 2</p>
+          <h1 className="mt-1 text-3xl font-bold text-slate-900">Complete your booking</h1>
+          <p className="mt-1 text-sm text-slate-600">Review your seat selection and enter passenger details.</p>
+        </header>
 
-      <BookingSummary train={selectedTrain} seats={seats} totalPrice={totalPrice} />
+        <BookingSummary train={selectedTrain} seats={seats} totalPrice={totalPrice} />
 
-      <div className="card mb-6">
-        <form id="passenger-form" onSubmit={handleSubmit(() => {})}>
-          <PassengerList
-            seats={seats}
-            register={register}
-            errors={errors}
-            savedPassengers={savedPassengers}
-            setValue={setValue}
-            savedPassengersLoading={savedPassengersLoading}
-          />
-        </form>
+        <div className="mb-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+          <form id="passenger-form" onSubmit={handleSubmit(() => {})}>
+            <PassengerList
+              seats={seats}
+              register={register}
+              errors={errors}
+              savedPassengers={savedPassengers}
+              setValue={setValue}
+              savedPassengersLoading={savedPassengersLoading}
+            />
+          </form>
+        </div>
+
+        <PaymentButton
+          passengers={watch('passengers') || getValues('passengers') || []}
+          scheduleId={scheduleId}
+          seatIds={seatIds}
+          disabled={!isValid}
+        />
       </div>
-
-      <PaymentButton
-        passengers={watch('passengers') || getValues('passengers') || []}
-        scheduleId={scheduleId}
-        seatIds={seatIds}
-        disabled={!isValid}
-      />
     </div>
   );
 }

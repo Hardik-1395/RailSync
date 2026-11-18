@@ -7,10 +7,10 @@ const items = [
 
 export default function SeatLegend() {
   return (
-    <div className="flex flex-wrap gap-4 mb-4">
+    <div className="flex flex-wrap gap-3">
       {items.map((item) => (
         <div key={item.label} className="flex items-center gap-2">
-          <span className={`w-5 h-5 rounded border-2 ${item.color}`} />
+          <span className={`h-4 w-4 rounded border-2 ${item.color}`} />
           <span className="text-xs text-gray-600">{item.label}</span>
         </div>
       ))}

@@ -29,8 +29,8 @@ export default function PassengerForm({ index, seat, register, errors, savedPass
   );
 
   return (
-    <div className="bg-gray-50 rounded-lg p-4">
-      <p className="text-sm font-semibold text-primary-900 mb-3">
+    <div className="rounded-xl border border-slate-200 bg-slate-50/80 p-4 sm:p-5">
+      <p className="mb-3 inline-flex rounded-full bg-blue-50 px-3 py-1 text-sm font-semibold text-primary-900">
         Passenger {index + 1} — Seat #{seat.seatNumber} ({formatSeatType(seat.seatType)})
       </p>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -89,7 +89,7 @@ export default function PassengerForm({ index, seat, register, errors, savedPass
           error={errors?.passengers?.[index]?.gender?.message}
         />
       </div>
-      {savedPassengers.length > 0 && <p className="mt-3 text-xs text-gray-500">Choose a saved passenger from the name suggestions, or enter someone new. Details are saved for future bookings when you submit this booking.</p>}
+      {savedPassengers.length > 0 && <p className="mt-3 text-xs leading-relaxed text-gray-500">Choose a saved passenger from the name suggestions, or enter someone new. Details are saved for future bookings when you submit this booking.</p>}
     </div>
   );
 }

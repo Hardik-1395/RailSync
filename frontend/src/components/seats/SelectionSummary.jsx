@@ -15,15 +15,15 @@ export default function SelectionSummary() {
   if (count === 0) return null;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg z-30">
-      <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-        <div className="text-sm">
-          <span className="font-semibold">{count}</span> seat{count !== 1 ? 's' : ''} selected
-          <span className="text-gray-400 ml-1">(max {MAX_SEATS_PER_BOOKING})</span>
-          <span className="ml-4 font-bold text-primary-900 text-lg">{formatCurrency(totalPrice)}</span>
+    <div className="fixed bottom-0 left-0 right-0 z-30 border-t border-slate-200 bg-white/95 shadow-[0_-8px_28px_rgba(15,23,42,0.08)] backdrop-blur-md">
+      <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3">
+        <div className="min-w-0 text-sm">
+          <span className="font-semibold text-slate-900">{count} seat{count !== 1 ? 's' : ''} selected</span>
+          <span className="ml-1 hidden text-gray-400 sm:inline">(max {MAX_SEATS_PER_BOOKING})</span>
+          <span className="ml-2 block text-lg font-bold text-primary-900 sm:ml-4 sm:inline">{formatCurrency(totalPrice)}</span>
         </div>
-        <Button onClick={() => navigate('/booking')}>
-          Proceed to Booking
+        <Button onClick={() => navigate('/booking')} className="shrink-0 rounded-full px-4 sm:px-6">
+          Continue to booking
         </Button>
       </div>
     </div>
