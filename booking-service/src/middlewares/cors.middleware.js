@@ -6,7 +6,7 @@ const allowedOrigins = config.ALLOWED_ORIGINS
      : [];
 
 const corsMiddleware = cors({
-     origin: function (origin, callback) {
+     origin: function (origin,callback) {
 
           if (!origin) return callback(null, true);
 
